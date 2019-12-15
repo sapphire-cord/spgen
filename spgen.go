@@ -244,6 +244,6 @@ func Init(bot *sapphire.Bot) {
   } else {
     fmt.Printf("Wrote output to %s\n", out)
     fmt.Println("")
-    fmt.Println("spgen is still in early development, please report any issues you find at https://github.com/pollen5/spgen/issues")
+    fmt.Println("spgen is still in early development, please report any issues you find at https://github.com/sapphire-cord/spgen/issues")
   }
 }
