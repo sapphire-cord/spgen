@@ -13,6 +13,7 @@ import (
   "path"
   "io/ioutil"
   "strconv"
+  "go/format"
 )
 
 // A'ight let's discuss a bit about this code.
@@ -41,6 +42,7 @@ var encodeJson = flag.Bool("json", false, "Return the result in JSON.")
 var baseImport = flag.String("import", "", "The base import path to use when importing command packages.")
 var output = flag.String("o", "", "Where to output the file.")
 var verbose = flag.Bool("v", false, "Verbose output")
+var fmtc = flag.Bool("fmt", false, "Format the output with gofmt")
 
 func walk(dir string, out map[string]*ast.Package) {
   filepath.Walk(dir, func(fpath string, info os.FileInfo, err error) error {
@@ -230,20 +232,36 @@ func Init(bot *sapphire.Bot) {
     if len(cmd.Aliases) > 0 {
       aliases := cmd.Aliases
       for i, al := range aliases { aliases[i] = "\"" + strings.Replace(al, "\"", "\\\"", -1) + "\"" }
-      src += fmt.Sprintf(".AddAliases(%s)", strings.Join(cmd.Aliases, ", ")) }
+      src += fmt.Sprintf(".AddAliases(%s)", strings.Join(cmd.Aliases, ", "))
+    }
     src += ")\n"
   }
+
   src += "}"
-  if *verbose { fmt.Println(src) }
+
+  if *verbose {
+    fmt.Println(src)
+  }
+
   out := *output
+
   if out == "" {
     out = "./commands/init.go"
   }
+
+  if *fmtc {
+    formatted, err := format.Source([]byte(src))
+    if err != nil {
+      panic(err)
+    }
+    src = string(formatted)
+  }
+
   if err := ioutil.WriteFile(out, []byte(src), 0666); err != nil {
     panic(err)
   } else {
     fmt.Printf("Wrote output to %s\n", out)
     fmt.Println("")
-    fmt.Println("spgen is still in early development, please report any issues you find at https://github.com/pollen5/spgen/issues")
+    fmt.Println("spgen is still in early development, please report any issues you find at https://github.com/sapphire-cord/spgen/issues")
   }
 }
