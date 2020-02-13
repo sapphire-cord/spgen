@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sort"
 )
 
 // A'ight let's discuss a bit about this code.
@@ -125,11 +126,6 @@ func main() {
 	}
 	commands := []CommandInfo{}
 	imports := []string{}
-	//fset := token.NewFileSet()
-	/*pkgs, err := parser.ParseDir(fset, "./commands", nil, parser.ParseComments)
-	  if err != nil {
-	    panic(err)
-	  }*/
 	pkgs := map[string]*ast.Package{}
 	if _, err := os.Lstat("./commands"); err != nil {
 		fmt.Println("spgen must be ran inside a project with a commands/ folder")
@@ -237,6 +233,9 @@ import (
 
 func Init(bot *sapphire.Bot) {
 `, strings.Join(imports, "\n  "))
+  sort.Slice(commands, func(i, j int) bool {
+	  return commands[i].Name < commands[j].Name
+  })
 	for _, cmd := range commands {
 		src += fmt.Sprintf("  bot.AddCommand(sapphire.NewCommand(\"%s\", \"%s\", %s)", cmd.Name, cmd.Category, cmd.Package)
 		if cmd.Description != "" {
